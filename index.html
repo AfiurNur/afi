@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afiur Nur | Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP (Animation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    
+    <!-- Three.js (3D Background) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Remix Icons (Socials) -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        /* Import Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+            /* Hide default cursor */
+            cursor: none;
+        }
+
+        /* 3D background canvas */
+        #three-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Custom smooth cursor */
+        .cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            background-color: #f87171; /* Red-400 */
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            z-index: 9999;
+            mix-blend-mode: difference;
+        }
+        
+        /* Cursor grow effect on hover */
+        .cursor-grow {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(248, 113, 113, 0.5); /* Red-400 with opacity */
+        }
+
+        /* Content containers */
+        #landingPage,
+        #mainContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        #landingPage {
+            display: flex;
+            flex-direction: column;
+            background-color: #0a0a0a;
+            color: #a0a0a0;
+            z-index: 3; /* Above main container initially */
+            cursor: pointer;
+        }
+
+        /* Main container hidden initially */
+        #mainContainer {
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: none;
+            z-index: 2;
+            overflow-y: auto; /* Allow scrolling on small screens */
+            padding: 2rem 1rem;
+        }
+        
+        #mainContainer.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        #landingPage.hidden {
+            opacity: 0;
+            transform: translateY(-50px);
+            pointer-events: none;
+        }
+
+        /* Discord Card Animations */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px rgba(114,137,218,0.4); }
+            50% { box-shadow: 0 0 30px rgba(114,137,218,0.8); }
+            100% { box-shadow: 0 0 15px rgba(114,137,218,0.4); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2.5s infinite ease-in-out;
+        }
+
+        /* Status indicator colors */
+        .status-online { border-color: #3ba55c; }
+        .status-idle { border-color: #faa61a; }
+        .status-dnd { border-color: #ed4245; }
+        .status-offline { border-color: #747f8d; }
+    </style>
+</head>
+
+<body class="bg-black text-white">
+
+    <!-- 3D Background -->
+    <div id="three-bg"></div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+
+    <!-- Landing Page -->
+    <div id="landingPage" class="flex flex-col items-center justify-center text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-gray-400 mb-4">Click to Enter</h1>
+        <div class="flex items-center space-x-2 text-gray-500">
+            <img src="https://placehold.co/40x40/ffffff/000000?text=B&font=inter" alt="Logo" class="w-8 h-8 rounded-full">
+            <h2 class="text-xl font-semibold"><span>X</span> AFIUR</h2>
+        </div>
+        <p class="mt-8 text-sm text-gray-600">Please wait for Lanyard to connect after entering.</p>
+    </div>
+
+    <!-- Main Container -->
+    <div id="mainContainer">
+        
+        <div class="content relative z-10 flex flex-col items-center justify-center min-h-full w-full max-w-2xl mx-auto text-center">
+            
+            <!-- Profile -->
+            <div class="profile-custom flex flex-col items-center mb-8">
+                <div class="image mb-4">
+                    <img src="https://placehold.co/150x150/ef4444/ffffff?text=Afiur&font=inter" 
+                         alt="Afiur Nur" 
+                         class="w-36 h-36 md:w-40 md:h-40 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/50 hover:scale-105">
+                </div>
+                <div class="name">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">AFIUR NUR</h2>
+                    <p class="text-lg text-gray-300 mt-1">Forever Her 🎀</p>
+                </div>
+            </div>
+
+            <!-- Discord Card -->
+            <div id="discord-card" class="discord-card w-full max-w-lg bg-gray-900/70 backdrop-blur-md rounded-2xl border border-gray-700/50 p-5 shadow-xl transition-all duration-300 animate-pulse-glow">
+                
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    <!-- Avatar + Status -->
+                    <div class="avatar-container relative flex-shrink-0">
+                        <img id="avatar" class="w-24 h-24 rounded-full border-4 status-offline transition-all duration-300" src="https://placehold.co/96x96/747f8d/ffffff?text=...&font=inter" alt="Avatar">
+                        <div id="status-indicator" class="absolute -bottom-1 -right-1 w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center">
+                            <span id="status" class="text-lg">⚫</span>
+                        </div>
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="user-info flex flex-col gap-3 flex-grow w-full text-center sm:text-left">
+                        <!-- Username + Badges -->
+                        <div class="name-badges flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
+                            <h2 id="username" class="text-2xl font-bold text-white truncate" title="Username">Loading...</h2>
+                            <div id="badges" class="badges flex gap-1.5 flex-shrink-0">
+                                <!-- Badges will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Separator -->
+                        <hr class="border-gray-700/50">
+
+                        <!-- Activity -->
+                        <div id="activity-embed" class="embed w-full bg-black/20 rounded-lg p-3 text-left min-h-[4rem] flex items-center">
+                            <span id="current-activity" class="text-gray-300">Loading presence...</span>
+                        </div>
+
+                        <!-- Spotify Embed -->
+                        <div id="spotify-embed" class="embed w-full bg-black/20 rounded-lg p-3 text-left min-h-[4rem] flex items-center gap-3 hidden">
+                            <img id="spotify-album" class="w-12 h-12 rounded-md" src="" alt="Spotify Album">
+                            <div class="flex flex-col overflow-hidden">
+                                <span class="text-sm font-semibold text-green-400">Listening to Spotify</span>
+                                <span id="spotify-song" class="text-white font-medium truncate"></span>
+                                <span id="spotify-artist" class="text-gray-400 text-sm truncate"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Socials -->
+            <div class="socials mt-10">
+                <a href="http://discord.com/goprohunter" target="_blank" class="text-gray-400 hover:text-red-400 transition-colors duration-200 text-4xl mx-3"><i class="ri-discord-fill"></i></a>
+                <a href="https://www.instagram.com/afiur.nur" target="_blank" class="text-gray-400 hover:text-red-400 transition-colors duration-200 text-4xl mx-3"><i class="ri-instagram-fill"></i></a>
+                <a href="https://www.facebook.com/afiur.nur" target="_blank" class="text-gray-400 hover:text-red-400 transition-colors duration-200 text-4xl mx-3"><i class="ri-facebook-box-fill"></i></a>
+                <a href="mailto:afiurnur@gmail.com" class="text-gray-400 hover:text-red-400 transition-colors duration-200 text-4xl mx-3"><i class="ri-mail-fill"></i></a>
+                <a href="https://github.com/afiurnur" target="_blank" class="text-gray-400 hover:text-red-400 transition-colors duration-200 text-4xl mx-3"><i class="ri-github-fill"></i></a>
+            </div>
+
+            <!-- Copyright -->
+            <div class="copyright mt-8 text-gray-600">
+                <p>Copyright 2025 @Afiur Nur</p>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script type="module">
+        // --- THREE.JS 3D BACKGROUND ---
+        let scene, camera, renderer, particles;
+        let mouseX = 0, mouseY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        function initThree() {
+            const container = document.getElementById('three-bg');
+
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+
+            // Particles
+            const particleCount = 5000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const color = new THREE.Color();
+
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() * 2000) - 1000;
+                const y = (Math.random() * 2000) - 1000;
+                const z = (Math.random() * 2000) - 1000;
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                // Assign colors (white and a bit of red)
+                if (Math.random() < 0.1) {
+                    color.setHex(0xf87171); // Red
+                } else {
+                    color.setHex(0xffffff); // White
+                }
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 1.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7,
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x000000, 0); // Transparent background
+            container.appendChild(renderer.domElement);
+
+            // Event Listeners
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX - windowHalfX) / 2;
+            mouseY = (event.clientY - windowHalfY) / 2;
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            
+            const time = Date.now() * 0.00005;
+
+            // Animate camera position based on mouse
+            camera.position.x += (mouseX - camera.position.x) * 0.01;
+            camera.position.y += (-mouseY - camera.position.y) * 0.01;
+            camera.lookAt(scene.position);
+
+            // Animate particles
+            particles.rotation.x = time * 0.2;
+            particles.rotation.y = time * 0.1;
+
+            renderer.render(scene, camera);
+        }
+        
+        // --- CUSTOM CURSOR ---
+        const cursor = document.querySelector(".cursor");
+        let mouse = { x: 0, y: 0 };
+        let pos = { x: 0, y: 0 };
+        const speed = 0.1;
+
+        window.addEventListener("mousemove", (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animateCursor() {
+            pos.x += (mouse.x - pos.x) * speed;
+            pos.y += (mouse.y - pos.y) * speed;
+            cursor.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%)`;
+            requestAnimationFrame(animateCursor);
+        }
+        
+        // Cursor grow effect
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.tagName === 'A' || e.target.closest('#landingPage')) {
+                cursor.classList.add('cursor-grow');
+            }
+        });
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.tagName === 'A' || e.target.closest('#landingPage')) {
+                cursor.classList.remove('cursor-grow');
+            }
+        });
+
+
+        // --- LANDING PAGE TRANSITION (GSAP) ---
+        const landingPage = document.getElementById("landingPage");
+        const mainContainer = document.getElementById("mainContainer");
+
+        const handleLandingClick = () => {
+            const tl = gsap.timeline();
+            tl.to(landingPage, {
+                y: -50,
+                opacity: 0,
+                duration: 1,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    landingPage.classList.add('hidden');
+                    landingPage.style.display = 'none'; // Hide for good
+                }
+            });
+            tl.to(mainContainer, {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                ease: "power2.out",
+                onComplete: () => {
+                    mainContainer.classList.add('visible');
+                }
+            }, "-=0.5");
+        };
+        
+        landingPage.addEventListener("click", handleLandingClick);
+        landingPage.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleLandingClick();
+            }
+        });
+
+        
+        // --- DISCORD LANYARD INTEGRATION ---
+        const discordId = "616547060891648002";
+
+        // Get elements
+        const avatarEl = document.getElementById("avatar");
+        const usernameEl = document.getElementById("username");
+        const badgesEl = document.getElementById("badges");
+        const statusEl = document.getElementById("status");
+        const statusIndicatorEl = document.getElementById("status-indicator");
+        const discordCardEl = document.getElementById("discord-card");
+        
+        // Activity
+        const activityEmbedEl = document.getElementById("activity-embed");
+        const activityEl = document.getElementById("current-activity");
+
+        // Spotify
+        const spotifyEmbedEl = document.getElementById("spotify-embed");
+        const spotifySongEl = document.getElementById("spotify-song");
+        const spotifyArtistEl = document.getElementById("spotify-artist");
+        const spotifyAlbumEl = document.getElementById("spotify-album");
+
+        // Badge URLs (using placeholders as local files aren't available)
+        // You should replace these with actual URLs to your badge images.
+        const MY_BADGES = {
+            developer: "https://placehold.co/28x28/7289da/ffffff?text=D&font=inter",
+            hypesquad_bravery: "https://placehold.co/28x28/f4737c/ffffff?text=H&font=inter",
+            tag_badge: "https://placehold.co/28x28/b0b0b0/ffffff?text=T&font=inter",
+            completed_quest: "https://placehold.co/28x28/4ade80/ffffff?text=Q&font=inter",
+        };
+
+        const STATUS_EMOJI = {
+            online: "🟢",
+            idle: "🌙",
+            dnd: "⛔",
+            offline: "⚫"
+        };
+        
+        const STATUS_COLOR_CLASS = {
+            online: "status-online",
+            idle: "status-idle",
+            dnd: "status-dnd",
+            offline: "status-offline"
+        };
+
+        function connectLanyard() {
+            const ws = new WebSocket("wss://api.lanyard.rest/socket");
+
+            ws.onopen = () => {
+                console.log("Connected to Lanyard WebSocket");
+                ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: discordId } }));
+                
+                // Set heartbeat
+                setInterval(() => {
+                    if (ws.readyState === ws.OPEN) {
+                        ws.send(JSON.stringify({ op: 3 }));
+                    }
+                }, 30000);
+            };
+
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+
+                if (msg.t === "INIT_STATE" || msg.t === "PRESENCE_UPDATE") {
+                    const data = msg.d;
+                    updatePresence(data);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log("Disconnected from Lanyard WebSocket, retrying in 5s...");
+                setTimeout(connectLanyard, 5000); // Retry connection
+            };
+            
+            ws.onerror = (err) => {
+                console.error("WebSocket error:", err);
+                ws.close(); // This will trigger onclose and retry
+            };
+        }
+        
+        function updatePresence(data) {
+            if (!data) {
+                // Handle case where data might be empty
+                usernameEl.textContent = "Offline";
+                avatarEl.src = "https://placehold.co/96x96/747f8d/ffffff?text=...&font=inter";
+                updateStatus("offline");
+                activityEl.textContent = "Offline";
+                spotifyEmbedEl.classList.add("hidden");
+                discordCardEl.classList.remove("animate-pulse-glow");
+                return;
+            }
+
+            const user = data.discord_user;
+            const status = data.discord_status || "offline";
+
+            // Avatar & username
+            avatarEl.src = `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`;
+            usernameEl.textContent = user.username;
+            usernameEl.title = `${user.username}#${user.discriminator}`; // Add tag to title
+
+            // Status
+            updateStatus(status);
+            
+            // Remove pulse animation once loaded
+            discordCardEl.classList.remove("animate-pulse-glow");
+
+            // Display all badges manually
+            badgesEl.innerHTML = "";
+            for (const [badge, url] of Object.entries(MY_BADGES)) {
+                const img = document.createElement("img");
+                img.src = url;
+                img.alt = badge;
+                img.title = badge.replace("_", " ");
+                img.className = "w-6 h-6 rounded-md transition-transform hover:scale-125";
+                badgesEl.appendChild(img);
+            }
+
+            // Spotify
+            if (data.spotify) {
+                spotifyEmbedEl.classList.remove("hidden");
+                spotifySongEl.textContent = data.spotify.song;
+                spotifyArtistEl.textContent = `by ${data.spotify.artist}`;
+                spotifyAlbumEl.src = data.spotify.album_art_url;
+                spotifyAlbumEl.style.display = "block";
+                
+                // Hide the generic activity embed if listening to Spotify
+                activityEmbedEl.classList.add("hidden");
+                
+            } else {
+                spotifyEmbedEl.classList.add("hidden");
+                activityEmbedEl.classList.remove("hidden"); // Show activity embed
+            }
+
+            // Current Activity (only if not listening to Spotify)
+            if (!data.spotify) {
+                let activityText = "Just chillin'...";
+                if (data.activities && data.activities.length) {
+                    // Find the first activity that isn't Spotify
+                    const normalActivity = data.activities.find(a => a.type !== 2); 
+                    if (normalActivity) {
+                        activityText = `🎮 Playing ${normalActivity.name}`;
+                        if (normalActivity.state) activityText += `: ${normalActivity.state}`;
+                        if (normalActivity.details) activityText += ` - ${normalActivity.details}`;
+                    }
+                }
+                activityEl.textContent = activityText;
+            }
+        }
+        
+        function updateStatus(status) {
+            statusEl.textContent = STATUS_EMOJI[status] || "⚫";
+            
+            // Update border color
+            const avatar = avatarEl;
+            avatar.classList.remove("status-online", "status-idle", "status-dnd", "status-offline");
+            avatar.classList.add(STATUS_COLOR_CLASS[status] || "status-offline");
+            
+            // Update status indicator bg
+            statusIndicatorEl.className = statusIndicatorEl.className.replace(/bg-\w+-\d+/, `bg-${STATUS_COLOR_CLASS[status].replace('status-', '')}-500`);
+        }
+
+        // --- INITIALIZE EVERYTHING ---
+        document.addEventListener("DOMContentLoaded", () => {
+            initThree();
+            animateThree();
+            animateCursor();
+            connectLanyard(); // Start Lanyard connection
+        });
+
+    </script>
+</body>
+</html>
